@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── Color Palette & Design Tokens ───
 const COLORS = {
-  primaryGreen: "#22C55E",
+  primaryGreen: "blue",
   darkGreen: "#16A34A",
   saffron: "#F97316",
   darkBrown: "#3D2B1F",
@@ -16,6 +16,7 @@ const COLORS = {
   success: "#16A34A",
   gold: "#D97706",
 };
+
 
 // ─── Shared Styles ───
 const globalStyles = `
