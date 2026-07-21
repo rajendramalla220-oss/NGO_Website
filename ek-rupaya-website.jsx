@@ -205,6 +205,7 @@ function Navbar({ currentPage, setPage }) {
     { id: "projects", label: "Projects" },
     { id: "impact", label: "Impact" },
     { id: "contact", label: "Contact" },
+    { id: "report", label: "Report Issue" },
   ];
 
   return (
@@ -722,6 +723,52 @@ function HomePage({ setPage }) {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Report an Issue CTA */}
+      <section style={{
+        background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+        padding: "64px 24px",
+      }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: "50%",
+            background: "linear-gradient(135deg, #F97316, #EA580C)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 24px", fontSize: 32,
+          }}>
+            ⚠️
+          </div>
+          <div className="section-label" style={{ color: COLORS.saffron }}>FOR SCHOOLS & HOSPITALS</div>
+          <h2 className="section-title" style={{ marginBottom: 16 }}>
+            Report an infrastructure issue
+          </h2>
+          <p style={{
+            fontSize: 17, color: COLORS.textSecondary, lineHeight: 1.7,
+            maxWidth: 600, margin: "0 auto 32px",
+          }}>
+            Is your government school or hospital facing infrastructure problems?
+            Submit a request with photos and details — our team will assess and prioritize it.
+          </p>
+          <button className="btn-primary"
+            onClick={() => { setPage("report"); }}
+            style={{ fontSize: 18, padding: "16px 40px", background: "linear-gradient(135deg, #F97316, #EA580C)" }}>
+            📋 Submit Issue Request
+          </button>
+          <div style={{ display: "flex", justifyContent: "center", gap: 32, marginTop: 32, flexWrap: "wrap" }}>
+            {[
+              { icon: "🏫", label: "School Issues" },
+              { icon: "🏥", label: "Hospital Issues" },
+              { icon: "📷", label: "Photo Evidence" },
+              { icon: "✅", label: "Track Progress" },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: COLORS.darkBrown, fontWeight: 500 }}>
+                <span style={{ fontSize: 20 }}>{item.icon}</span>
+                {item.label}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
@@ -2165,6 +2212,333 @@ function Footer({ setPage }) {
   );
 }
 
+
+// ═══════════════════════════════════════
+//  REPORT ISSUE PAGE
+// ═══════════════════════════════════════
+function ReportIssuePage({ setPage }) {
+  const [formData, setFormData] = useState({
+    name: "", phone: "", pinCode: "", category: "school",
+    institutionName: "", district: "", state: "", issueTitle: "",
+    issueDescription: "", urgency: "medium",
+  });
+  const [profilePreview, setProfilePreview] = useState(null);
+  const [issuePhotos, setIssuePhotos] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleProfilePhoto = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setProfilePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleIssuePhotos = (e) => {
+    const files = Array.from(e.target.files).slice(0, 5);
+    const previews = [];
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        previews.push(reader.result);
+        if (previews.length === files.length) setIssuePhotos(prev => [...prev, ...previews]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeIssuePhoto = (index) => {
+    setIssuePhotos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.phone || !formData.issueTitle || !formData.issueDescription) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    setSubmitted(true);
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "14px 16px", border: "1px solid " + COLORS.border,
+    borderRadius: 12, fontSize: 15, fontFamily: "Inter, sans-serif",
+    background: "white", outline: "none", transition: "border-color 0.3s",
+  };
+
+  const labelStyle = {
+    fontSize: 14, fontWeight: 600, color: COLORS.darkBrown, marginBottom: 6, display: "block",
+  };
+
+  if (submitted) {
+    return (
+      <div style={{ minHeight: "100vh", background: COLORS.warmCream, paddingTop: 100 }}>
+        <div style={{
+          maxWidth: 600, margin: "0 auto", padding: "60px 24px", textAlign: "center",
+        }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: "50%",
+            background: "linear-gradient(135deg, #22C55E, #16A34A)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 24px", fontSize: 40,
+          }}>✓</div>
+          <h2 className="playfair" style={{ fontSize: 32, color: COLORS.darkBrown, marginBottom: 16 }}>
+            Issue Reported Successfully!
+          </h2>
+          <p style={{ fontSize: 16, color: COLORS.textSecondary, lineHeight: 1.7, marginBottom: 12 }}>
+            Thank you, <strong>{formData.name}</strong>. Your report for <strong>{formData.institutionName || "the institution"}</strong> has been received.
+          </p>
+          <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 32 }}>
+            Reference ID: <strong>ERI-{Date.now().toString(36).toUpperCase()}</strong><br />
+            Our team will review and reach out within 48 hours.
+          </p>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+            <button className="btn-primary" onClick={() => { setSubmitted(false); setFormData({ name: "", phone: "", pinCode: "", category: "school", institutionName: "", district: "", state: "", issueTitle: "", issueDescription: "", urgency: "medium" }); setProfilePreview(null); setIssuePhotos([]); }}>
+              Report Another Issue
+            </button>
+            <button className="btn-outline" onClick={() => setPage("home")}>
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: COLORS.warmCream, paddingTop: 90 }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 24px" }}>
+        <div className="section-label" style={{ color: COLORS.saffron }}>REPORT AN ISSUE</div>
+        <h1 className="section-title" style={{ marginBottom: 8 }}>
+          School / Hospital Issue Request
+        </h1>
+        <p className="section-subtitle" style={{ marginBottom: 40 }}>
+          Help us identify infrastructure problems in government schools and hospitals.
+          Fill in the details below and our team will assess the situation.
+        </p>
+
+        {/* Profile Section */}
+        <div style={{
+          background: "white", borderRadius: 20, padding: 32,
+          border: "1px solid rgba(0,0,0,0.06)", marginBottom: 24,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: COLORS.darkBrown, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 22 }}>👤</span> Your Profile
+          </h3>
+
+          <div style={{ display: "flex", gap: 24, marginBottom: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+            {/* Profile Photo */}
+            <div style={{ textAlign: "center" }}>
+              <div style={{
+                width: 100, height: 100, borderRadius: "50%",
+                background: profilePreview ? "none" : "linear-gradient(135deg, #E5E7EB, #D1D5DB)",
+                backgroundImage: profilePreview ? "url(" + profilePreview + ")" : "none",
+                backgroundSize: "cover", backgroundPosition: "center",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: "3px dashed " + COLORS.border, cursor: "pointer",
+                overflow: "hidden", position: "relative",
+              }}
+                onClick={() => document.getElementById("profile-photo-input").click()}
+              >
+                {!profilePreview && <span style={{ fontSize: 28, color: COLORS.textSecondary }}>📷</span>}
+              </div>
+              <input id="profile-photo-input" type="file" accept="image/*"
+                style={{ display: "none" }} onChange={handleProfilePhoto} />
+              <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 8 }}>Upload Photo</div>
+            </div>
+
+            {/* Name, Phone, Pin Code */}
+            <div style={{ flex: 1, minWidth: 250 }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>Full Name <span style={{ color: "#EF4444" }}>*</span></label>
+                <input style={inputStyle} placeholder="Enter your full name"
+                  value={formData.name} onChange={e => handleChange("name", e.target.value)} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Phone Number <span style={{ color: "#EF4444" }}>*</span></label>
+                  <input style={inputStyle} placeholder="+91 XXXXX XXXXX" type="tel"
+                    value={formData.phone} onChange={e => handleChange("phone", e.target.value)} />
+                </div>
+                <div>
+                  <label style={labelStyle}>PIN Code</label>
+                  <input style={inputStyle} placeholder="6-digit PIN" maxLength={6}
+                    value={formData.pinCode} onChange={e => handleChange("pinCode", e.target.value)} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Issue Details Section */}
+        <div style={{
+          background: "white", borderRadius: 20, padding: 32,
+          border: "1px solid rgba(0,0,0,0.06)", marginBottom: 24,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: COLORS.darkBrown, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 22 }}>🏢</span> Issue Details
+          </h3>
+
+          {/* Category Selection */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={labelStyle}>Category <span style={{ color: "#EF4444" }}>*</span></label>
+            <div style={{ display: "flex", gap: 12 }}>
+              {[
+                { value: "school", label: "🏫 Government School", color: "#3B82F6" },
+                { value: "hospital", label: "🏥 Government Hospital", color: "#EF4444" },
+              ].map(cat => (
+                <button key={cat.value}
+                  onClick={() => handleChange("category", cat.value)}
+                  style={{
+                    flex: 1, padding: "14px 16px", borderRadius: 12, cursor: "pointer",
+                    border: formData.category === cat.value ? "2px solid " + cat.color : "1px solid " + COLORS.border,
+                    background: formData.category === cat.value ? cat.color + "10" : "white",
+                    fontSize: 14, fontWeight: formData.category === cat.value ? 600 : 400,
+                    color: formData.category === cat.value ? cat.color : COLORS.textSecondary,
+                    transition: "all 0.2s ease",
+                  }}>
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Institution Details */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Institution Name</label>
+            <input style={inputStyle}
+              placeholder={formData.category === "school" ? "e.g. Govt. Primary School, Village Name" : "e.g. CHC Narayanpur"}
+              value={formData.institutionName} onChange={e => handleChange("institutionName", e.target.value)} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>District</label>
+              <input style={inputStyle} placeholder="District name"
+                value={formData.district} onChange={e => handleChange("district", e.target.value)} />
+            </div>
+            <div>
+              <label style={labelStyle}>State</label>
+              <input style={inputStyle} placeholder="State name"
+                value={formData.state} onChange={e => handleChange("state", e.target.value)} />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Issue Title <span style={{ color: "#EF4444" }}>*</span></label>
+            <input style={inputStyle} placeholder="e.g. Broken desks in Class 3"
+              value={formData.issueTitle} onChange={e => handleChange("issueTitle", e.target.value)} />
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Describe the Issue <span style={{ color: "#EF4444" }}>*</span></label>
+            <textarea style={{ ...inputStyle, minHeight: 120, resize: "vertical" }}
+              placeholder="Describe the issue in detail — what is broken, how many students/patients are affected, how long has this been a problem?"
+              value={formData.issueDescription} onChange={e => handleChange("issueDescription", e.target.value)} />
+          </div>
+
+          {/* Urgency */}
+          <div style={{ marginBottom: 0 }}>
+            <label style={labelStyle}>Urgency Level</label>
+            <div style={{ display: "flex", gap: 12 }}>
+              {[
+                { value: "low", label: "Low", color: "#22C55E" },
+                { value: "medium", label: "Medium", color: "#F59E0B" },
+                { value: "high", label: "High", color: "#EF4444" },
+              ].map(u => (
+                <button key={u.value}
+                  onClick={() => handleChange("urgency", u.value)}
+                  style={{
+                    flex: 1, padding: "10px 12px", borderRadius: 10, cursor: "pointer",
+                    border: formData.urgency === u.value ? "2px solid " + u.color : "1px solid " + COLORS.border,
+                    background: formData.urgency === u.value ? u.color + "15" : "white",
+                    fontSize: 14, fontWeight: formData.urgency === u.value ? 600 : 400,
+                    color: formData.urgency === u.value ? u.color : COLORS.textSecondary,
+                    transition: "all 0.2s ease",
+                  }}>
+                  {u.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Issue Photos Section */}
+        <div style={{
+          background: "white", borderRadius: 20, padding: 32,
+          border: "1px solid rgba(0,0,0,0.06)", marginBottom: 24,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: COLORS.darkBrown, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 22 }}>📸</span> Issue Photos
+          </h3>
+          <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 16 }}>
+            Upload up to 5 photos showing the issue. Clear photos help our team assess the situation faster.
+          </p>
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+            {issuePhotos.map((photo, i) => (
+              <div key={i} style={{
+                width: 120, height: 120, borderRadius: 12, overflow: "hidden",
+                position: "relative", border: "1px solid " + COLORS.border,
+              }}>
+                <img src={photo} alt={"Issue " + (i + 1)} style={{
+                  width: "100%", height: "100%", objectFit: "cover",
+                }} />
+                <button onClick={() => removeIssuePhoto(i)} style={{
+                  position: "absolute", top: 4, right: 4,
+                  width: 24, height: 24, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.6)", color: "white",
+                  border: "none", cursor: "pointer", fontSize: 14,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>x</button>
+              </div>
+            ))}
+
+            {issuePhotos.length < 5 && (
+              <div
+                onClick={() => document.getElementById("issue-photos-input").click()}
+                style={{
+                  width: 120, height: 120, borderRadius: 12,
+                  border: "2px dashed " + COLORS.border,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", gap: 4, background: COLORS.lightCream,
+                  transition: "border-color 0.3s",
+                }}>
+                <span style={{ fontSize: 28, color: COLORS.textSecondary }}>+</span>
+                <span style={{ fontSize: 12, color: COLORS.textSecondary }}>Add Photo</span>
+              </div>
+            )}
+          </div>
+          <input id="issue-photos-input" type="file" accept="image/*" multiple
+            style={{ display: "none" }} onChange={handleIssuePhotos} />
+        </div>
+
+        {/* Submit Button */}
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <button className="btn-primary"
+            onClick={handleSubmit}
+            style={{
+              fontSize: 18, padding: "18px 48px", width: "100%", maxWidth: 400,
+              justifyContent: "center",
+            }}>
+            📋 Submit Issue Report
+          </button>
+          <p style={{ fontSize: 13, color: COLORS.textSecondary, marginTop: 12 }}>
+            By submitting, you confirm the information provided is accurate to the best of your knowledge.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 // ═══════════════════════════════════════
 //  MAIN APP
 // ═══════════════════════════════════════
@@ -2222,6 +2596,7 @@ export default function App() {
       case "donate": return <DonatePage />;
       case "impact": return <ImpactPage />;
       case "contact": return <ContactPage />;
+      case "report": return <ReportIssuePage setPage={navigateTo} />;
       default: return <HomePage setPage={navigateTo} />;
     }
   };
